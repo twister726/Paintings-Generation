@@ -18,7 +18,7 @@ if __name__=='__main__':
             img_url = r.text.split("<img src=")[1].split(" ")[0][1:-1]
             path = "./data/" + img_url.split("/")[-1]
 
-            urllib.request.urlretrieve(img_url,img_name) 
+            urllib.request.urlretrieve(img_url,path) 
 
 #            if imgr.status_code == 200:
 #                count += 1
