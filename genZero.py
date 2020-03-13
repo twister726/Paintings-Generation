@@ -101,8 +101,8 @@ class BaseGenerator(nn.Module):
         stackedReal = stacked.clone()
         
         
-        joined_gen = self.D0_join(torch.cat([stacked, d_down], dim = 1)).view(self.batch_size, 800)
-        joined_real = self.D0_join(torch.cat([stackedReal, d_down_real], dim = 1)).view(self.batch_size, 800)
+        joined_gen = self.D0_join(torch.cat([stacked, d_down], dim = 1)).view(imgs.shape[0], 800)
+        joined_real = self.D0_join(torch.cat([stackedReal, d_down_real], dim = 1)).view(imgs.shape[0], 800)
         
         return gen_img, h0, self.D0_judge(joined_gen), self.D0_judge(joined_real)
     
