@@ -135,7 +135,7 @@ def trainEncoderDecoder(encoder, decoder, criterion, epochs,
     # Early Stop criteria
     minLoss = 1e6
     minLossIdx = 0
-    earliestStopEpoch = 10
+    earliestStopEpoch = 7
     earlyStopDelta = 3
     for epoch in range(epochs):
         ts = time.time()
@@ -195,8 +195,8 @@ def trainEncoderDecoder(encoder, decoder, criterion, epochs,
   
         training_loss.append(loss)
         
-        torch.save(encoder, 'weights_base/' + name + 'encoder_epoch{}'.format(epoch))
-        torch.save(decoder, 'weights_base/'+ name + 'decoder_epoch{}'.format(epoch))
+        torch.save(encoder, 'weights/' + name + 'encoder_epoch{}'.format(epoch))
+        torch.save(decoder, 'weights/'+ name + 'decoder_epoch{}'.format(epoch))
         
         with open(logname, "a") as file:
             file.write("writing!\n")
@@ -212,8 +212,8 @@ def trainEncoderDecoder(encoder, decoder, criterion, epochs,
             # Store new best
             minLoss = val_loss#.item()
             minLossIdx = epoch
-            torch.save(encoder, 'weights_base/' + name + 'encoder_best')
-            torch.save(decoder, 'weights_base/'+ name + 'decoder_best')
+            torch.save(encoder, 'weights/' + name + 'encoder_best')
+            torch.save(decoder, 'weights/'+ name + 'decoder_best')
             
         #If passed min threshold, and no new min has been reached for delta epochs
         elif epoch > earliestStopEpoch and (epoch - minLossIdx) > earlyStopDelta:
@@ -236,7 +236,7 @@ def trainEncoderDecoder(encoder, decoder, criterion, epochs,
 
 
 if __name__=='__main__':
-    name = "lstm"
+    name = "lstm128"
     device = None
     if torch.cuda.is_available():
         device = torch.device("cuda:0")
@@ -280,16 +280,16 @@ if __name__=='__main__':
     with open('./data/vocab.pkl', 'rb') as f:
         vocab = pickle.load(f)
     
-    img_side_length = 256
+    img_side_length = 128
     transform = tf.Compose([
         tf.Resize(img_side_length),
         #tf.RandomCrop(img_side_length),
         tf.CenterCrop(img_side_length),
         tf.ToTensor(),
     ])
-    batch_size = 10
+    batch_size = 20
     shuffle = True
-    num_workers = 5
+    num_workers = 20
     
     
     trainDl = get_loader(trainValRoot, trainValJson, trainIds, vocab, 
@@ -302,9 +302,9 @@ if __name__=='__main__':
                         transform=transform, batch_size=batch_size, 
                         shuffle=shuffle, num_workers=num_workers)
     
-    encoded_feature_dim = 1024
+    encoded_feature_dim = 800
     maxSeqLen = 56
-    hidden_dim = 1500
+    hidden_dim = 800
     depth = 1
     
     encoder = Encoder(encoded_feature_dim)
