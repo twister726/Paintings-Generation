@@ -38,28 +38,31 @@ class BaseGenerator(nn.Module):
         )
         
         self.D0_down = nn.Sequential(
-            nn.Conv2d(in_channels = 3, out_channels= 64, kernel_size = 4, stride = 2,padding=2),
+            nn.Conv2d(in_channels = 3, out_channels= 64, kernel_size = 4, stride = 2,padding=1),
             #No batch norm/leaky Relu on first
             
-            nn.Conv2d(in_channels = 64, out_channels= 128, kernel_size = 4, stride = 2,padding=2),
+            nn.Conv2d(in_channels = 64, out_channels= 128, kernel_size = 4, stride = 2,padding=1),
             nn.BatchNorm2d(128),
             nn.LeakyReLU(inplace=True),
             
-            nn.Conv2d(in_channels = 128, out_channels= 256, kernel_size = 4, stride = 2,padding=2),
+            nn.Conv2d(in_channels = 128, out_channels= 256, kernel_size = 4, stride = 2,padding=1),
             nn.BatchNorm2d(256),
             nn.LeakyReLU(inplace=True),
             
-            nn.Conv2d(in_channels = 256, out_channels= 512, kernel_size = 4, stride = 2,padding=2),
-            nn.BatchNorm2d(256),
+            nn.Conv2d(in_channels = 256, out_channels= 512, kernel_size = 4, stride = 2,padding=1),
+            nn.BatchNorm2d(512),
             nn.LeakyReLU(inplace=True),
         )
         
         self.D0_join = nn.Conv2d(in_channels = 768, out_channels = 50, kernel_size=1,stride=1)
-        self.D0_judge = Linear(800, 1)
+        self.D0_judge = nn.Sequential(
+            nn.Linear(800, 1),
+            nn.Softmax(),
+        )
 
 
                    
-    def forward(self, sentence):
+    def forward(self, sentence, imgs):
 
 #         embeds = self.embedding(sentence)
         
@@ -85,16 +88,23 @@ class BaseGenerator(nn.Module):
         #word_scores = fc_out
         #return indices.type(torch.int64).cuda()
         resized = self.F0_FC(sentence)
-        h0 = self.F0(resized)
+        h0 = self.F0(resized.view(self.batch_size, 3, 8, 8))
         gen_img = self.G0(h0)
         d_down = self.D0_down(gen_img)
         
         #Reshape to concat and join
-        stack = torch.stack([sentence.clone(), sentence.clone(), sentence.clone(), sentence.clone()], dim=2)
+        stack = torch.stack([sentence.clone().squeeze(0), sentence.clone().squeeze(0),
+                             sentence.clone().squeeze(0), sentence.clone().squeeze(0)], dim=2)
         stacked = torch.stack([stack.clone(), stack.clone(), stack.clone(), stack.clone()], dim=3)
         
-        joined = self.G0_join(torch.stack([stacked, d_down], dim = 1))
-        return gen_img, h0, self.D0_judge(joined)
+        d_down_real = self.D0_down(imgs)
+        stackedReal = stacked.clone()
+        
+        
+        joined_gen = self.D0_join(torch.cat([stacked, d_down], dim = 1)).view(self.batch_size, 800)
+        joined_real = self.D0_join(torch.cat([stackedReal, d_down_real], dim = 1)).view(self.batch_size, 800)
+        
+        return gen_img, h0, self.D0_judge(joined_gen), self.D0_judge(joined_real)
     
 #     def generate_caption(self, features, maxSeqLen, temperature, stochastic=False):
 #         # TODO - function for generating caption without using teacher forcing (using network outputs)

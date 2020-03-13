@@ -94,7 +94,7 @@ class FlowerDataset(data.Dataset):
                 else:
                     self.img2cap[img_id] = [cap_id]
                     
-        self.ids = self.cap2cap.keys()
+        self.ids = list(self.cap2cap.keys())
         print("# ids: {}".format(len(self.ids)))
                 
                 
@@ -102,6 +102,7 @@ class FlowerDataset(data.Dataset):
         self.vocab = vocab
         self.transform = transform
         self.maxCapLen += 2
+
         
     def __getitem__(self, index):
         """Returns one data pair (image and caption)."""
