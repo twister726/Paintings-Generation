@@ -59,7 +59,7 @@ class BaseGenerator(nn.Module):
         self.D0_join = nn.Conv2d(in_channels = 640, out_channels = 50, kernel_size=1,stride=1)
         self.D0_judge = nn.Sequential(
             nn.Linear(800, 1),
-            #nn.Softmax(),
+            nn.Sigmoid(),
         )
 
     def setDiscriminatorGrad(self, grad_on):
