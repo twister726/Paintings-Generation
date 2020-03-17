@@ -24,12 +24,12 @@ class BaseGenerator(nn.Module):
             nn.Upsample(scale_factor=2, mode='nearest'),
             nn.Conv2d(in_channels = 3, out_channels= 3, kernel_size = 3, stride = 1,padding=1),
             nn.BatchNorm2d(3),
-            nn.LeakyReLU(inplace=True),
+            nn.ReLU(inplace=True),
             
             nn.Upsample(scale_factor=2, mode='nearest'),
             nn.Conv2d(in_channels = 3, out_channels= 3, kernel_size = 3, stride = 1,padding=1),
             nn.BatchNorm2d(3),
-            nn.LeakyReLU(inplace=True),
+            nn.ReLU(inplace=True),
         )
         
         self.G0 = nn.Sequential(
